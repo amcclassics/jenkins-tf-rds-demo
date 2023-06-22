@@ -1,0 +1,19 @@
+---
+- name: Clone the Jenkins CLI Plugin Manager Tool from git
+  get_url:
+    url: 'https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.12.11/jenkins-plugin-manager-2.12.11.jar'
+    dest: ~jenkins/jenkins-plugin-manager.jar
+  become: true
+  become_user: jenkins
+
+- name: Run the Plugin Manager to install pipeline-aws plugin to Jenkins
+  shell: |
+    java -jar ~jenkins/jenkins-plugin-manager.jar --war /usr/share/java/jenkins.war --plugin-file {{ role_path }}/files/plugins.yaml --plugins delivery-pipeline-plugin:1.3.2 deployit-plugin -d /var/lib/jenkins/plugins
+  become: true
+  become_user: jenkins
+
+- name: Restart the Jenkins systemctl service for plugins to take effect
+  shell: |
+    service jenkins restart
+  become: true
+  warn: false

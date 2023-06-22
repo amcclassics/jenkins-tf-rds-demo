@@ -1,0 +1,49 @@
+---
+- name: Get GPG key for Jenkins repo
+  get_url: 
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: "{{ role_path }}/files/jenkins.io.key"
+
+- name: Add repo key for Jenkins 
+  apt_key:
+    file: "{{ role_path }}/files/jenkins.io.key"
+  become: true
+
+- name: Add Jenkins Repository to apt sources
+  shell: |
+    echo "deb http://pkg.jenkins.io/debian-stable binary/" > /etc/apt/sources.list.d/jenkins.list
+  become: true
+
+- name: Update apt repository cache
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install Jenkins pre-reqs just in case
+  apt:
+    pkg: 
+      - fontconfig 
+      - openjdk-11-jre
+    state: present
+  become: true
+
+- name: Install Jenkins package from configured repositories
+  apt:
+    name: jenkins
+    state: present
+  become: true
+
+- name: Use systemd module to verify Jenkins is started
+  systemd:
+    state: started
+    name: jenkins
+  become: true
+
+- name: Get Jenkins systemctl status
+  shell: |
+     systemctl status jenkins
+  register: jenkins_status
+
+- name: Print output Jenkins systemctl status
+  debug:
+    msg: "{{ jenkins_status.stdout_lines }}"

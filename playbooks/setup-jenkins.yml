@@ -1,0 +1,9 @@
+---
+- name: Configure and Install dependencies for Jenkins
+  hosts: localhost
+  gather_facts: no
+  roles:
+#    - roles/install-jenkins
+#    - roles/config-firewall
+#    - roles/install-jenkins-plugin-manager
+    - roles/install-terraform

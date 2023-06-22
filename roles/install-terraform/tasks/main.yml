@@ -1,0 +1,30 @@
+---
+- name: Get GPG key for Terraform repo
+  get_url: 
+    url: https://apt.releases.hashicorp.com/gpg
+    dest: "{{ role_path }}/files/hashicorp.key"
+
+- name: Add repo key for Hashicorp
+  apt_key:
+    file: "{{ role_path }}/files/hashicorp.key"
+  become: true
+
+- name: Get distribution codename for repository
+  shell: lsb_release -cs
+  register: os_codename
+
+- name: Add Hashicorp/Terraform Repository to apt sources
+  shell: |
+    echo "deb https://apt.releases.hashicorp.com {{ os_codename.stdout }} main" > /etc/apt/sources.list.d/hashicorp.list
+  become: true
+
+- name: Update apt repository cache
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install Terraform package from configured repositories
+  apt:
+    name: terraform
+    state: present
+  become: true

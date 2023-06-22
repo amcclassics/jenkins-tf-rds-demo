@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'db_identifier', defaultValue: 'mydb1', description: 'specify db identifier')
+        string(name: 'snapshot_name', defaultValue: 'testsnapshot', description: 'specify snapshot name')
+    }
+
+     environment {
+        access_key = credentials('TF_USER_ACCESS_KEY')
+        secret_key = credentials('TF_USER_SECRET_KEY')
+    }
+
+
+    stages {
+        stage('Configure AWS CLI') {
+            steps {
+            
+            sh "echo \"[default]\" > ~jenkins/.aws/credentials"
+            sh "echo \"aws_access_key_id = ${access_key}\" >> ~jenkins/.aws/credentials"
+            sh "echo \"aws_secret_access_key = ${secret_key}\" >> ~jenkins/.aws/credentials"
+
+            }
+        }//endstage
+        stage('Create DB Snapshot') {
+            steps {
+            sh "aws rds create-db-snapshot --db-instance-identifier ${params.db_identifier} --db-snapshot-identifier ${params.snapshot_name}"
+            }
+        }
+    }
+}

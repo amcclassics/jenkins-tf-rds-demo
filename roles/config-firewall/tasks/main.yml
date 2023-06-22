@@ -1,0 +1,12 @@
+---
+- name: Install Ansible community general collection
+  shell: |
+    ansible-galaxy collection install community.general
+  become: true
+
+- name: Allow all access to port 8080 (Jenkins webcontainer Port)
+  community.general.ufw:
+    rule: allow
+    port: '8080'
+    proto: tcp
+  become: true

@@ -1,0 +1,4 @@
+plugins:
+  - artifactId: pipeline-aws
+    source:
+      version: latest

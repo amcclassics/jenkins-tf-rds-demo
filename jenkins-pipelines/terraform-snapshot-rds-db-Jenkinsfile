@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'terraform_workspace', defaultValue: 'terraform-backupdb', description: 'specify workspace')
+        string(name: 'snapshot_name', defaultValue: 'testsnapshot', description: 'specify snapshot name')
+    }
+
+     environment {
+        access_key = credentials('TF_USER_ACCESS_KEY')
+        secret_key = credentials('TF_USER_SECRET_KEY')
+    }
+
+
+    stages {
+        /*stage('checkout') {
+            steps {
+                 script{
+                        dir("~jenkins")
+                        {
+                            git "https://github.com/amcclassics/jenkins-project.git"
+                        }
+                    }
+                }
+            }
+*/
+        stage('plan') {
+            
+            steps {
+                //dir("/var/lib/jenkins") {
+                sh "cd ~jenkins;${TF_HOME}/terraform workspace select ${params.terraform_workspace}"
+                sh "cd ~jenkins/terraform.tfstate.d/${params.terraform_workspace};sed -i 's/@SNAPSHOT_NAME@/${params.snapshot_name}/g' terraform.tfvars"
+                sh "cd ~jenkins/terraform.tfstate.d/${params.terraform_workspace};${TF_HOME}/terraform init"
+                sh "cd ~jenkins/terraform.tfstate.d/${params.terraform_workspace};${TF_HOME}/terraform plan -input=false -out tfplan_${params.terraform_workspace} -var=\"access_key=${access_key}\" -var=\"secret_key=${secret_key}\""
+                //}
+            }
+        }
+        stage('apply') {
+            steps {
+              //dir("/var/lib/jenkins") {   
+                sh "cd ~jenkins/terraform.tfstate.d/${params.terraform_workspace};${TF_HOME}/terraform apply -input=false tfplan_${params.terraform_workspace}"
+              //}
+            }
+
+        }
+
+
+  }
+}
